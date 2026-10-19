@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'api_response_error' => 'Сервер вернул страницу вместо данных приложения. Убедитесь, что все файлы загружены, и повторите попытку.',
+    'request_timeout' => 'Сервер не ответил вовремя. Повторите попытку.',
+
     'app_name' => 'Vela',
     'app_tagline' => 'Ясный взгляд на ваши финансы.',
     'personal_finance' => 'Личные финансы',

@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'api_response_error' => 'Server ilova ma’lumotlari o‘rniga boshqa sahifani qaytardi. Barcha fayllar yuklanganini tekshirib, qayta urinib ko‘ring.',
+    'request_timeout' => 'Serverdan javob olish vaqti tugadi. Qayta urinib ko‘ring.',
+
     'app_name' => 'Vela',
     'app_tagline' => 'Mablag‘laringizga aniqroq nazar.',
     'personal_finance' => 'Shaxsiy moliya',

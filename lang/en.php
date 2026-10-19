@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'api_response_error' => 'The server returned a page instead of app data. Check that all uploaded files are present, then try again.',
+    'request_timeout' => 'Your server took too long to respond. Please try again.',
+
     'app_name' => 'Vela',
     'app_tagline' => 'A clearer view of your money.',
     'personal_finance' => 'Personal finance',

@@ -1,8 +1,15 @@
 <?php
+require_once __DIR__ . '/../src/Hosting.php';
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: same-origin');
 header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
+$hostingIssues = Hosting::problems();
+if ($hostingIssues) {
+    Hosting::errorPage($hostingIssues);
+    exit;
+}
+$assetVersion = substr(hash('sha256', hash_file('sha256', __DIR__ . '/assets/app.css') . hash_file('sha256', __DIR__ . '/assets/app.js')), 0, 16);
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -13,17 +20,17 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-sr
     <meta name="description" content="Vela — a clearer view of your personal and business finances. Manage accounts, transactions, budgets and your financial future in one place.">
     <title>Vela — Your money, in focus</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%2310b981'/%3E%3Cpath d='m10 12 10 18 10-18h-6l-4 8-4-8z' fill='%23090d16'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="/assets/app.css">
-    <script defer src="/assets/vendor/lucide.min.js"></script>
-    <script defer src="/assets/vendor/chart.umd.min.js"></script>
-    <script defer src="/assets/app.js"></script>
+    <link rel="stylesheet" href="assets/app.css?v=<?= $assetVersion ?>">
+    <script defer src="assets/vendor/lucide.min.js?v=0.468.0"></script>
+    <script defer src="assets/vendor/chart.umd.min.js?v=4.4.7"></script>
+    <script defer src="assets/app.js?v=<?= $assetVersion ?>"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
 
 <div id="auth-root" class="auth-root" aria-live="polite">
     <div class="initial-loading">
-        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><path d="m5 7 9 16 9-16h-5l-4 8-4-8H5Z" fill="currentColor"/></svg></span>
+        <span class="brand-mark" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="m5 7 9 16 9-16h-5l-4 8-4-8H5Z" fill="currentColor"/></svg></span>
         <span class="loading-wordmark">vela<span>.</span></span>
         <span class="loading-spinner" aria-label="Loading your workspace"></span>
     </div>
@@ -31,7 +38,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-sr
 
 <div id="app-shell" class="app-shell" hidden>
     <aside id="sidebar" class="sidebar" aria-label="Main navigation">
-        <a class="brand" href="/" aria-label="Vela home">
+        <a class="brand" href="./" aria-label="Vela home">
             <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><path d="m5 7 9 16 9-16h-5l-4 8-4-8H5Z" fill="currentColor"/></svg></span>
             <span class="brand-wordmark">vela<span>.</span></span>
         </a>

@@ -2,9 +2,25 @@
 
 A self-contained finance workspace built with PHP 8.2+, PDO SQLite, Vanilla ES6, and custom responsive CSS. No PHP framework, Composer, build system, or JavaScript package installation is required. Pinned Chart.js and Lucide distributions are vendored from their CDN releases, so the interface needs no external requests; financial data stays in your SQLite database.
 
+## Upload to your website
+
+Use the prepared **`vela-upload.zip`** to deploy from your hosting file manager. Extract its contents into `public_html/sandbox/` and open **https://oxfordlc.uz/sandbox/**. The root entry point opens the application in `/sandbox/public/`; assets, API requests, translations and downloads automatically follow the installation folder.
+
+The upload includes local CSS, icons and charts. There is no dependency installation, build command, Composer, npm, plugin, rewrite rule or document-root change to perform. Standard Apache/LiteSpeed hosting must already provide **PHP 8.2+ with PDO SQLite, session and JSON support**, allow the included `.htaccess` protections, and let PHP write to `database/`. The application checks its requirements and displays a clear startup message if a host capability is unavailable.
+
+See [the file-manager upload guide](docs/UPLOAD.md) for the exact extraction steps and safe updates. The upload archive contains application files only; it never includes an existing financial database, accounts, passwords, secrets or Git history. When updating, preserve `database/finance.db` and its SQLite journal files.
+
+To generate the upload archive from this source checkout, use Python's standard library:
+
+```sh
+python3 scripts/package-upload.py
+```
+
+This creates `/tmp/vela-upload.zip`. A destination outside the source checkout can be supplied as the sole argument. Python is a packaging tool for the developer; the uploaded application runs entirely in PHP.
+
 ## Run locally
 
-Install PHP 8.2 or newer with **PDO SQLite**, **SQLite3**, **session**, **JSON**, and **OpenSSL** enabled. On Debian/Ubuntu, install `php-cli php-sqlite3`.
+Use PHP 8.2 or newer with **PDO SQLite**, **session**, and **JSON** enabled. On Debian/Ubuntu, the PDO SQLite driver is provided by `php-sqlite3`.
 
 ```sh
 php scripts/check.php
@@ -17,7 +33,7 @@ Alternatively, from the `public/` directory run exactly:
 php -S localhost:8000
 ```
 
-An optional secure development router supports `php -S localhost:8000 router.php` from the repository root. **Always use the public document root or this router.** Serving the repository root without the router would expose private database and configuration files.
+An optional secure development router supports `php -S localhost:8000 router.php` from the repository root. For PHP's built-in server, use the public document root or this router: the development server does not apply `.htaccess` protections. File-manager deployments use Apache/LiteSpeed and the included access rules.
 
 Open the server in your browser, create your owner account, and choose whether to include sample financial data. There are no default credentials. Passwords must be 12–72 bytes. Leave sample data unchecked for an empty real workspace. The database and schema initialize automatically at `database/finance.db`; keep this directory writable by the PHP process.
 
@@ -55,6 +71,8 @@ public/assets/    custom CSS and Vanilla JavaScript
 scripts/          prerequisite checks and optional cloud runtime setup
 tests/            isolated end-to-end HTTP/API integration tests
 database/         private, automatically initialized SQLite data
+index.php         file-manager deployment entry point
+.htaccess         Apache/LiteSpeed access protection; no URL rewriting
 router.php        optional safe development router
 ```
 
@@ -84,7 +102,9 @@ Set `CHROMIUM_BIN` for a nonstandard Chromium executable. Set `VELA_SCREENSHOT_D
 
 ## Deployment and operations
 
-PHP's built-in server is intended for development. For an Internet-facing deployment, use PHP-FPM with a maintained HTTPS web server, set its document root to `public/`, disable PHP error display, and restrict filesystem access to the application user. Keep PHP/security updates current. If TLS terminates at a reverse proxy, configure trusted proxy handling so PHP receives the actual HTTPS state; do not blindly trust client-supplied forwarding headers.
+PHP's built-in server is intended for development. Standard Apache/LiteSpeed shared hosting supports the file-manager deployment described above with the supplied `.htaccess` files. Preserve these hidden files when extracting or copying the application: they protect the database, source, configuration and private tooling. An Nginx deployment requires equivalent server access rules or a document root at `public/`; Nginx does not apply `.htaccess` files.
+
+For a deployment where you control the server, use a maintained HTTPS web server with its document root at `public/`, disable PHP error display, and restrict filesystem access to the application user. Keep PHP/security updates current. If TLS terminates at a reverse proxy, configure trusted proxy handling so PHP receives the actual HTTPS state; do not blindly trust client-supplied forwarding headers.
 
 Back up using the in-app owner-only backup action so WAL data is included consistently. Treat downloaded backups as sensitive: they contain financial records and password hashes. Encrypt and store them securely. To restore, stop PHP workers, preserve the current database, replace `database/finance.db` from a known backup, remove obsolete `-wal`/`-shm` files only while all workers are stopped, restore owner-only file permissions, and start the service. A backup should be restore-tested before relying on it.
 

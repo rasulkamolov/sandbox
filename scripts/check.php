@@ -2,7 +2,7 @@
 declare(strict_types=1);
 $errors = [];
 if (PHP_VERSION_ID < 80200) $errors[] = 'PHP 8.2 or newer is required.';
-foreach (['pdo_sqlite', 'session', 'json', 'openssl'] as $extension) {
+foreach (['pdo_sqlite', 'session', 'json'] as $extension) {
     if (!extension_loaded($extension)) $errors[] = "Missing PHP extension: $extension";
 }
 $directory = dirname(__DIR__) . '/database';
