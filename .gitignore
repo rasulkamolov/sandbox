@@ -1,0 +1,11 @@
+# Private financial data and SQLite journals
+database/*.db
+database/*.db-*
+database/*.sqlite*
+# Local runtime and secrets
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
