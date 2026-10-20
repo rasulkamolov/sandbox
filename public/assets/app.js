@@ -280,7 +280,9 @@
     if (!$('#modal-root .modal')) state.modalReturn = document.activeElement;
     $('#modal-root').innerHTML = `<div class="modal-overlay"><section class="modal ${wide ? 'modal-wide' : ''}" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1"><div class="modal-handle"></div><div class="modal-header"><div><span class="page-eyebrow">${escape(t('app_name'))} · ${escape(t('workspace'))}</span><h2 id="modal-title">${escape(title)}</h2></div><button class="icon-btn" data-action="close-modal" aria-label="${escape(t('close'))}">${icon('x')}</button></div><div class="modal-body">${body}</div>${footer ? `<div class="modal-footer">${footer}</div>` : ''}</section></div>`;
     document.body.classList.add('modal-open'); icons();
-    setTimeout(() => { ($('#modal-root input:not([type=hidden])') || $('#modal-root select') || $('#modal-root .modal')).focus(); }, 20);
+    // Focus before returning control: a delayed callback could steal focus after
+    // someone has already selected a different field and started typing.
+    ($('#modal-root input:not([type=hidden])') || $('#modal-root select') || $('#modal-root .modal')).focus({ preventScroll: true });
   }
   function empty(title = 'no_activity', description = 'no_activity_description', action = '', symbol = 'sparkles') {
     return `<div class="empty-state"><span class="empty-icon">${icon(symbol)}</span><h3>${escape(t(title))}</h3><p>${escape(t(description))}</p>${action}</div>`;

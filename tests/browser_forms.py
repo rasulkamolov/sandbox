@@ -202,7 +202,15 @@ with tempfile.TemporaryDirectory(prefix='vela-forms-') as directory:
             page.locator('[data-action=confirm-delete]').click()
             expect(page.locator('#modal-root')).to_be_empty()
             assert balance(source) == 800 and item('debts', id=debt_id)['remaining'] == 200
-            form = edit('debts', debt_id)
+            # A modal must not move focus away from a field chosen immediately
+            # after opening; delayed autofocus previously corrupted fast input.
+            page.evaluate('''(id) => {
+                document.querySelector(`[data-action=edit][data-resource=debts][data-id="${id}"]`).click();
+                document.querySelector('form[data-resource=debts] [name=amount]').focus();
+            }''', debt_id)
+            form = page.locator('form[data-resource=debts]')
+            page.wait_for_timeout(50)
+            expect(form.locator('[name=amount]')).to_be_focused()
             form.locator('[name=amount]').fill('250')
             form.locator('[name=contact]').fill('client@example.test')
             submit(form)
