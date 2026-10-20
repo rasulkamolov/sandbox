@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'report_how_calculated' => 'How this report works',
+    'nav_accounts_short' => 'Accounts',
+    'nav_transactions_short' => 'Activity',
+    'nav_debts_short' => 'Debts',
+    'nav_budgets_short' => 'Budgets',
     'session_refreshed' => 'Your secure session was refreshed. Please try again.',
     'api_response_error' => 'The server returned a page instead of app data. Check that all uploaded files are present, then try again.',
     'request_timeout' => 'Your server took too long to respond. Please try again.',

@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'report_how_calculated' => 'Hisobot qanday hisoblanadi',
+    'nav_accounts_short' => 'Hisoblar',
+    'nav_transactions_short' => 'Amallar',
+    'nav_debts_short' => 'Qarzlar',
+    'nav_budgets_short' => 'Byudjet',
     'session_refreshed' => 'Xavfsiz seansingiz yangilandi. Qayta urinib ko‘ring.',
     'api_response_error' => 'Server ilova ma’lumotlari o‘rniga boshqa sahifani qaytardi. Barcha fayllar yuklanganini tekshirib, qayta urinib ko‘ring.',
     'request_timeout' => 'Serverdan javob olish vaqti tugadi. Qayta urinib ko‘ring.',

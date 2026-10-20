@@ -38,11 +38,15 @@ $assetVersion = substr(hash('sha256', hash_file('sha256', __DIR__ . '/assets/app
 </div>
 
 <div id="app-shell" class="app-shell" hidden>
+    <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" tabindex="-1" aria-label="Close menu" hidden></button>
     <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand-row">
         <a class="brand" href="./" aria-label="Vela home">
             <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><path d="m5 7 9 16 9-16h-5l-4 8-4-8H5Z" fill="currentColor"/></svg></span>
             <span class="brand-wordmark">vela<span>.</span></span>
         </a>
+        <button id="sidebar-close" class="icon-btn sidebar-close" type="button" data-action="close-sidebar" aria-label="Close menu"><i data-lucide="x"></i></button>
+        </div>
 
         <div class="workspace-card">
             <span class="workspace-icon"><i data-lucide="layers-2"></i></span>
@@ -78,7 +82,7 @@ $assetVersion = substr(hash('sha256', hash_file('sha256', __DIR__ . '/assets/app
     <div class="app-main">
         <header class="topbar">
             <div class="topbar-leading">
-                <button id="sidebar-toggle" class="icon-btn sidebar-toggle" type="button" aria-label="Toggle sidebar" title="Toggle sidebar"><i data-lucide="panel-left"></i></button>
+                <button id="sidebar-toggle" class="icon-btn sidebar-toggle" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle sidebar" title="Toggle sidebar"><i data-lucide="panel-left"></i></button>
                 <div class="topbar-divider"></div>
                 <div class="breadcrumb"><span class="breadcrumb-parent" data-i18n="workspace">Workspace</span><i data-lucide="chevron-right"></i><span id="page-title" data-i18n="overview">Overview</span></div>
                 <span id="page-subtitle" class="sr-only"></span>

@@ -52,7 +52,7 @@ On this prepared cloud machine PHP is available at `/workspace/.runtime/php/bin/
 
 ## Readability and a fresh start
 
-The interface uses a 16px base, larger controls and data text, and readable chart labels on desktop and mobile.
+The interface uses a 16px base, readable chart labels, and layouts for phones, tablets, landscape screens and desktops. On phones, records become cards, navigation stays within thumb reach, and forms open as keyboard-aware bottom sheets with sticky save actions. The More menu includes language, theme and sign-out controls. Reports offer section shortcuts; choose Custom dates to reveal the date range on mobile.
 
 Owners can use **Settings → Remove sample data** to remove explicitly marked example records. Real entries are preserved. If a real entry still uses a sample account, category, tag, schedule or debt, that required context is retained. A sample record you edit becomes a real record. A retained account keeps its opening balance; you can review it under Accounts.
 
@@ -108,9 +108,12 @@ PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_smoke.py
 PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_forms.py
 PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/reports_reset.py
 PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_reports_reset.py
+PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_mobile.py
 ```
 
-Set `CHROMIUM_BIN` for a nonstandard Chromium executable. Set `VELA_SCREENSHOT_DIR` to save desktop/mobile screenshots outside the repository. Both browser suites use isolated databases. The smoke suite checks onboarding, charts, every module view, transaction CRUD and balance reversals, language/theme persistence, and mobile navigation/modals. The form suite submits all remaining module forms, checks transfers and repayments against real balances, and validates assistant credentials and password/CSRF rotation.
+Set `CHROMIUM_BIN` for a nonstandard Chromium executable. Set `VELA_SCREENSHOT_DIR` to save desktop/mobile screenshots outside the repository. All browser suites use isolated databases. The smoke suite checks onboarding, charts, every module view, transaction CRUD and balance reversals, language/theme persistence, and mobile navigation/modals. The form suite submits all remaining module forms, checks transfers and repayments against real balances, and validates assistant credentials and password/CSRF rotation.
+
+The mobile suite checks every owner page in English, Uzbek and Russian at 320, 375, 430, 768, 844 (landscape), and 1440 pixels. It exercises touch targets, long names and large UZS balances, sidebar/More controls, report filters, form scrolling and transaction create/edit in a reduced keyboard-sized viewport, plus assistant navigation.
 
 ## Deployment and operations
 

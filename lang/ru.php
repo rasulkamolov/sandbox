@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 // Shared UI keys; api_errors maps exact API messages to localized feedback.
 return [
+    'report_how_calculated' => 'Как рассчитывается отчёт',
+    'nav_accounts_short' => 'Счета',
+    'nav_transactions_short' => 'Операции',
+    'nav_debts_short' => 'Долги',
+    'nav_budgets_short' => 'Бюджет',
     'session_refreshed' => 'Защищённый сеанс обновлён. Повторите попытку.',
     'api_response_error' => 'Сервер вернул страницу вместо данных приложения. Убедитесь, что все файлы загружены, и повторите попытку.',
     'request_timeout' => 'Сервер не ответил вовремя. Повторите попытку.',
