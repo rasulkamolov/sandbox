@@ -1,0 +1,12 @@
+# Apache / LiteSpeed shared hosting. No rewrite module is required.
+DirectoryIndex index.php
+Options -Indexes
+
+<IfModule mod_alias.c>
+    RedirectMatch 404 "(?i)(?:^|/)\.(?:git|hg|svn)(?:/|$)"
+</IfModule>
+
+# Never serve private data, source-control metadata, logs or backup archives.
+<FilesMatch "(?i)(^\.|\.(db|sqlite|sqlite3)(-(wal|shm|journal))?$|\.(sql|log|zip|tar|gz|bak|ini|env)$|^router\.php$)">
+    Require all denied
+</FilesMatch>

@@ -3,11 +3,23 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
+require_once __DIR__ . '/../src/Hosting.php';
+$hostingIssues = Hosting::problems();
+if ($hostingIssues) {
+    http_response_code(503);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo json_encode(['ok' => false, 'error' => implode(' ', $hostingIssues)]);
+    exit;
+}
+
 require_once __DIR__ . '/../config/config.php';
 require_once APP_ROOT . '/src/Helpers.php';
 require_once APP_ROOT . '/src/Database.php';
 require_once APP_ROOT . '/src/Auth.php';
 require_once APP_ROOT . '/src/Finance.php';
+require_once APP_ROOT . '/src/DemoData.php';
+require_once APP_ROOT . '/src/Reports.php';
 
 header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
@@ -30,7 +42,27 @@ try {
     }
     $user=Auth::requireUser();
     if($action==='logout'&&$method==='POST'){Database::audit('logout','users',(int)$user['id']);Auth::clear();respond(Auth::session());}
-    if($action==='bootstrap'&&$method==='GET')respond(Finance::bootstrap());
+    if($action==='bootstrap'&&$method==='GET'){
+        $result=Finance::bootstrap();
+        if($user['role']==='owner')$result['demo_status']=DemoData::status();
+        respond($result);
+    }
+    if($action==='demo_status'&&$method==='GET')respond(DemoData::status());
+    if($action==='clear_sample_data'&&$method==='POST')respond(DemoData::clear($data));
+    if($action==='reset_finances'&&$method==='POST')respond(DemoData::reset($data));
+    if($action==='reports'&&$method==='GET')respond(Reports::build($_GET));
+    if($action==='report_export'&&$method==='GET'){
+        $export=Reports::export($_GET);
+        Database::audit('export_report','reports');
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="vela-report-'.date('Y-m-d').'.csv"');
+        $out=fopen('php://output','w');fwrite($out,"\xEF\xBB\xBF");
+        foreach([$export['headers'],...$export['rows']]as$row){
+            $safe=array_map(static fn($value)=>is_int($value)||is_float($value)?$value:csv_safe($value),$row);
+            fputcsv($out,$safe,',','"','');
+        }
+        fclose($out);exit;
+    }
     if($action==='analytics'&&$method==='GET')respond(Finance::analytics(currency($_GET['currency']??'USD')));
     if($action==='process_recurring'&&$method==='POST')respond(Finance::processRecurring());
     if($action==='password'&&$method==='POST'){

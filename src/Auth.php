@@ -11,9 +11,11 @@ final class Auth
             if (!is_dir($sessionPath)) mkdir($sessionPath, 0700, true);
             session_save_path($sessionPath);
         }
-        session_name('vela_session');
-        session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', 'httponly' => true, 'samesite' => 'Lax']);
-        session_start();
+        // Separate installations on the same hosting domain must not share login.
+        session_name('vela_' . substr(hash('sha256', (string) realpath(APP_ROOT)), 0, 16) . '_session');
+        $cookiePath = class_exists('Hosting') ? Hosting::cookiePath() : '/';
+        session_set_cookie_params(['lifetime' => 0, 'path' => $cookiePath, 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', 'httponly' => true, 'samesite' => 'Lax']);
+        if (!session_start()) fail('Your hosting could not start a PHP session. Please contact your hosting provider.', 503);
         if (isset($_SESSION['last_activity']) && time() - $_SESSION['last_activity'] > SESSION_IDLE_SECONDS) self::clear();
         $_SESSION['last_activity'] = time();
         $_SESSION['csrf'] ??= bin2hex(random_bytes(32));
