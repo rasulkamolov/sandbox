@@ -58,27 +58,27 @@ CREATE TABLE IF NOT EXISTS accounts (
  id INTEGER PRIMARY KEY, name TEXT NOT NULL, type TEXT NOT NULL CHECK(type IN ('bank','card','cash','savings','digital')),
  currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')), initial_balance INTEGER NOT NULL DEFAULT 0,
  icon TEXT NOT NULL DEFAULT 'wallet', color TEXT NOT NULL DEFAULT '#10b981', status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','archived')),
- details TEXT NOT NULL DEFAULT '', target_amount INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+ details TEXT NOT NULL DEFAULT '', target_amount INTEGER NOT NULL DEFAULT 0, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS categories (
  id INTEGER PRIMARY KEY, name TEXT NOT NULL, type TEXT NOT NULL CHECK(type IN ('income','expense')),
- parent_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT, icon TEXT NOT NULL DEFAULT 'tag', color TEXT NOT NULL DEFAULT '#10b981'
+ parent_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT, icon TEXT NOT NULL DEFAULT 'tag', color TEXT NOT NULL DEFAULT '#10b981', is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1))
 );
-CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, color TEXT NOT NULL DEFAULT '#06b6d4');
+CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, color TEXT NOT NULL DEFAULT '#06b6d4', is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1)));
 CREATE TABLE IF NOT EXISTS recurring (
  id INTEGER PRIMARY KEY, type TEXT NOT NULL CHECK(type IN ('income','expense')), amount INTEGER NOT NULL CHECK(amount>0),
  account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT,
  category_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT,
  description TEXT NOT NULL DEFAULT '', frequency TEXT NOT NULL CHECK(frequency IN ('daily','weekly','monthly','annual')),
  next_date TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN(0,1)), anchor_day INTEGER NOT NULL DEFAULT 1, anchor_month INTEGER NOT NULL DEFAULT 1,
- created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT
+ created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1))
 );
 CREATE TABLE IF NOT EXISTS transactions (
  id INTEGER PRIMARY KEY, type TEXT NOT NULL CHECK(type IN ('income','expense')), amount INTEGER NOT NULL CHECK(amount>0),
  currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')), account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT,
  category_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT, date TEXT NOT NULL,
  description TEXT NOT NULL DEFAULT '', receipt TEXT NOT NULL DEFAULT '', recurring_id INTEGER REFERENCES recurring(id) ON DELETE SET NULL,
- occurrence_date TEXT, created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ occurrence_date TEXT, created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
  UNIQUE(recurring_id,occurrence_date)
 );
 CREATE INDEX IF NOT EXISTS transactions_date ON transactions(date);
@@ -88,22 +88,22 @@ CREATE TABLE IF NOT EXISTS transfers (
  id INTEGER PRIMARY KEY, from_account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT,
  to_account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT, amount INTEGER NOT NULL CHECK(amount>0), fee INTEGER NOT NULL DEFAULT 0 CHECK(fee>=0),
  currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')), received_amount INTEGER NOT NULL CHECK(received_amount>0), date TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
- created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, CHECK(from_account_id<>to_account_id)
+ created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1)), CHECK(from_account_id<>to_account_id)
 );
 CREATE TABLE IF NOT EXISTS budgets (
  id INTEGER PRIMARY KEY, category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE RESTRICT, amount INTEGER NOT NULL CHECK(amount>0),
- currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')), month TEXT NOT NULL, UNIQUE(category_id,currency,month)
+ currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')), month TEXT NOT NULL, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1)), UNIQUE(category_id,currency,month)
 );
 CREATE TABLE IF NOT EXISTS debts (
  id INTEGER PRIMARY KEY, direction TEXT NOT NULL CHECK(direction IN ('borrowing','lending')), counterparty TEXT NOT NULL, contact TEXT NOT NULL DEFAULT '',
  amount INTEGER NOT NULL CHECK(amount>0), currency TEXT NOT NULL CHECK(currency IN ('UZS','USD','EUR','RUB')),
  account_id INTEGER REFERENCES accounts(id) ON DELETE RESTRICT, date TEXT NOT NULL, due_date TEXT,
- description TEXT NOT NULL DEFAULT '', created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT
+ description TEXT NOT NULL DEFAULT '', created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1))
 );
 CREATE TABLE IF NOT EXISTS repayments (
  id INTEGER PRIMARY KEY, debt_id INTEGER NOT NULL REFERENCES debts(id) ON DELETE CASCADE,
  account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT, amount INTEGER NOT NULL CHECK(amount>0),
- date TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT
+ date TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT, is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1))
 );
 CREATE TABLE IF NOT EXISTS audit_logs (
  id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE RESTRICT, action TEXT NOT NULL,
@@ -112,9 +112,26 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit_logs BEGIN SELECT RAISE(ABORT,'Audit logs are immutable'); END;
 CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit_logs BEGIN SELECT RAISE(ABORT,'Audit logs are immutable'); END;
 SQL);
-        $columns = array_column(self::$connection->query('PRAGMA table_info(transfers)')->fetchAll(), 'name');
-        if (!in_array('received_amount', $columns, true)) {
-            self::$connection->exec('ALTER TABLE transfers ADD COLUMN received_amount INTEGER NOT NULL DEFAULT 0; UPDATE transfers SET received_amount=amount WHERE received_amount=0;');
+        // Migrate existing file-manager installations in place. Acquiring the write
+        // lock before inspecting columns makes concurrent first requests safe.
+        self::$connection->exec('BEGIN IMMEDIATE');
+        try {
+            $columns = array_column(self::$connection->query('PRAGMA table_info(transfers)')->fetchAll(), 'name');
+            if (!in_array('received_amount', $columns, true)) {
+                self::$connection->exec('ALTER TABLE transfers ADD COLUMN received_amount INTEGER NOT NULL DEFAULT 0; UPDATE transfers SET received_amount=amount WHERE received_amount=0;');
+            }
+            foreach (['accounts','categories','tags','transactions','transfers','budgets','debts','repayments','recurring'] as $table) {
+                $columns = array_column(self::$connection->query('PRAGMA table_info(' . $table . ')')->fetchAll(), 'name');
+                if (!in_array('is_demo', $columns, true)) {
+                    // Existing rows are deliberately unmarked: their origin cannot
+                    // safely be inferred from names, dates, balances, or amounts.
+                    self::$connection->exec('ALTER TABLE ' . $table . ' ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN(0,1))');
+                }
+            }
+            self::$connection->exec('COMMIT');
+        } catch (Throwable $e) {
+            self::$connection->exec('ROLLBACK');
+            throw $e;
         }
     }
 }

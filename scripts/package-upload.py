@@ -46,9 +46,11 @@ APPROVED_FILES = (
     "src/.htaccess",
     "src/Auth.php",
     "src/Database.php",
+    "src/DemoData.php",
     "src/Finance.php",
     "src/Helpers.php",
     "src/Hosting.php",
+    "src/Reports.php",
     "tests/.htaccess",
 )
 

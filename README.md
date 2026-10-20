@@ -47,8 +47,18 @@ On this prepared cloud machine PHP is available at `/workspace/.runtime/php/bin/
 - **Budgets:** monthly category caps with green, amber, and red thresholds.
 - **Debts:** borrowing and lending, counterparty contact and due dates, account-linked principal movements, and partial repayments. Repayments cannot exceed the remaining debt.
 - **Recurring:** daily, weekly, monthly and annual schedules; process due entries from the interface. Processing is idempotent. Process due entries from the UI or schedule the local CLI worker below; there is no bundled background daemon.
-- **Reports:** income/expense trends, cash flow, asset distribution, and 30/60/90-day forecasts. Totals and forecasts are grouped by currency; there is no implicit exchange conversion. Forecasts are estimates based on historical spending and scheduled obligations, not guaranteed outcomes.
+- **Reports:** filter by period, currency and account; compare income, spending, net cash flow and savings rate with the previous period of the same length. See ranked spending categories, transfer fees, account performance, the largest expenses, overdue and upcoming obligations, daily spending and estimated balance runway. Charts include accessible data tables and a CSV export of the selected report. The 30/60/90-day forecast is explicitly for all accounts in the selected currency. Forecasts are estimates, not guaranteed outcomes.
 - **Settings:** session-persisted English, Uzbek and Russian; dark/light themes; current-password-verified password changes; assistant management; audit history; and a consistent SQLite backup download.
+
+## Readability and a fresh start
+
+The interface uses a 16px base, larger controls and data text, and readable chart labels on desktop and mobile.
+
+Owners can use **Settings → Remove sample data** to remove explicitly marked example records. Real entries are preserved. If a real entry still uses a sample account, category, tag, schedule or debt, that required context is retained. A sample record you edit becomes a real record. A retained account keeps its opening balance; you can review it under Accounts.
+
+For a completely empty financial workspace, use **Settings → Reset financial workspace**. This deletes **all financial records**, including real entries, across every account and currency. Owner/assistant logins, passwords, session language, and the immutable audit history remain. Both actions require the owner's current password and the exact confirmation phrase shown in the dialog. Download a backup first if you might need the old records.
+
+Older uploads did not mark sample records. The update never guesses based on names or amounts: it preserves unmarked records. To remove older samples and start empty, use the explicitly confirmed full financial reset. Updating the application alone never clears financial data.
 
 ## Roles and security
 
@@ -96,6 +106,8 @@ Optional real browser checks use Python Playwright and Chromium (test tools only
 ```sh
 PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_smoke.py
 PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_forms.py
+PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/reports_reset.py
+PHP_BIN=/workspace/.runtime/php/bin/php python3 tests/browser_reports_reset.py
 ```
 
 Set `CHROMIUM_BIN` for a nonstandard Chromium executable. Set `VELA_SCREENSHOT_DIR` to save desktop/mobile screenshots outside the repository. Both browser suites use isolated databases. The smoke suite checks onboarding, charts, every module view, transaction CRUD and balance reversals, language/theme persistence, and mobile navigation/modals. The form suite submits all remaining module forms, checks transfers and repayments against real balances, and validates assistant credentials and password/CSRF rotation.

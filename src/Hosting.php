@@ -18,7 +18,7 @@ final class Hosting
         if (!function_exists('json_encode')) {
             $issues[] = 'PHP JSON support is unavailable on this hosting account.';
         }
-        foreach (['config/config.php', 'src/Auth.php', 'src/Database.php', 'src/Finance.php', 'src/Helpers.php', 'lang/en.php', 'lang/uz.php', 'lang/ru.php', 'public/assets/app.css', 'public/assets/app.js', 'public/assets/vendor/lucide.min.js', 'public/assets/vendor/chart.umd.min.js'] as $file) {
+        foreach (['config/config.php', 'src/Auth.php', 'src/Database.php', 'src/DemoData.php', 'src/Finance.php', 'src/Helpers.php', 'src/Reports.php', 'lang/en.php', 'lang/uz.php', 'lang/ru.php', 'public/assets/app.css', 'public/assets/app.js', 'public/assets/vendor/lucide.min.js', 'public/assets/vendor/chart.umd.min.js'] as $file) {
             if (!is_readable(dirname(__DIR__) . '/' . $file)) {
                 $issues[] = 'The upload is incomplete: ' . $file . ' is missing or unreadable. Extract all files from the upload ZIP again; your existing database is not included in the ZIP.';
             }

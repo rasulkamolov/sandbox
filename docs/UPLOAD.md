@@ -28,7 +28,9 @@ The supplied database and configuration protections are designed for Apache/Lite
 3. Keep the existing `database/` folder, **`database/finance.db`**, and any `finance.db-wal` or `finance.db-shm` files. Do not delete or replace them during the update.
 4. Delete the uploaded ZIP and reload **https://oxfordlc.uz/sandbox/**. A hard refresh clears old browser assets if needed.
 
-The supplied archive contains no database or SQLite journal files, so extracting it does not overwrite your financial data or users. A fresh installation initializes its own database automatically. Existing installations keep their owner and assistant logins.
+The supplied archive contains no database or SQLite journal files, so extracting it does not overwrite your financial data or users. A fresh installation initializes its own database automatically. Existing installations keep their owner and assistant logins. This update adds sample markers to the existing database automatically; it never guesses which older records are samples or deletes data during an update.
+
+After updating, open **Settings / Sozlamalar**. **Remove sample data / Namuna ma’lumotlarini o‘chirish** removes marked examples while keeping your own entries. Older unmarked sample data can be removed with **Reset financial workspace / Moliyaviy ish maydonini tozalash**; that action removes **all financial records**, including your own entries. Your login, password, assistants and audit history remain. The dialog requires your current password and the exact confirmation phrase; a backup download is available before you confirm.
 
 ## If the page does not open
 

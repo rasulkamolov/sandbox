@@ -47,3 +47,15 @@ GET filters include `search`, `from`, `to`, `account_id` and `category_id` where
 ## Authorization
 
 The owner can use all modules. Assistants may access operational transactions, categories, tags, recurring records and minimal account selectors. Account balances and private account metadata, dashboard totals, analytics, transfers, budgets, debts, users, audit and backup require owner access. A disallowed request returns HTTP 403. Unauthenticated requests return HTTP 401. Invalid CSRF returns HTTP 419. Validation failures use HTTP 422; database relationship/uniqueness conflicts may use HTTP 409. Do not infer authorization merely from a hidden menu item.
+
+
+## Reports and owner-controlled cleanup
+
+`GET ?action=reports&currency=USD&from=2026-10-01&to=2026-10-20` returns an inclusive, currency-specific operating report. Optional `account_id` narrows activity to that account. The previous period has exactly the same number of days. Transfer fees count as expenses; transfer principal and loan cash movements do not count as operating income/expenses. Monthly budgets are explicitly full-month values. Current obligations, upcoming payments and liquidity are labelled with today's `as_of` date. `GET ?action=report_export` accepts the same filters and returns a spreadsheet-safe CSV.
+
+Owner-only `GET ?action=demo_status` returns marked sample counts and financial record counts; owner bootstrap also includes `demo_status`. No record is inferred to be a sample by its name or amount.
+
+- `POST ?action=clear_sample_data` requires `current_password` and `confirmation: "REMOVE SAMPLE DATA"`. It deletes marked examples, preserving real entries and required references.
+- `POST ?action=reset_finances` requires `current_password` and `confirmation: "RESET FINANCES"`. It deletes all financial records, preserving users, credentials and audit logs.
+
+Both operations require the normal session CSRF token and verify the password inside the same database transaction as deletion. Wrong passwords, confirmation mismatches and denied roles cannot partially clear records. Existing unmarked installations can use the explicit full reset to start empty. Migration and ordinary application updates do not remove data.

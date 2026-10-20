@@ -284,7 +284,7 @@ def exercise_upload(browser, mount, full=True, public_root=False, storage_disabl
             assert any(row.get('description') == 'Uploaded transaction' and float(row['amount']) == 20 for row in records)
 
             page.locator('#sidebar [data-page=settings]').click()
-            backup = page.locator('#main-content a[download]')
+            backup = page.locator('#main-content a[href*="action=backup"]').first
             assert backup.evaluate('(element) => element.href').startswith(api_url + '?')
             with page.expect_download() as download_event:
                 backup.click()

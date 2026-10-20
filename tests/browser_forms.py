@@ -206,7 +206,7 @@ with tempfile.TemporaryDirectory(prefix='vela-forms-') as directory:
             form.locator('[name=amount]').fill('250')
             form.locator('[name=contact]').fill('client@example.test')
             submit(form)
-            assert balance(source) == 750
+            assert balance(source) == 750, (balance(source), item('debts', id=debt_id))
             delete('debts', debt_id)
             assert balance(source) == 1000
             print('PASS: debt and repayment create/update/delete with balance reconciliation')

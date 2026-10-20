@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../src/Hosting.php';
 header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store, private');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: same-origin');
 header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
